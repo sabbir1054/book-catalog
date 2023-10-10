@@ -1,9 +1,9 @@
-import httpStatus from "http-status";
-import ApiError from "../../../errors/ApiError";
-import prisma from "../../../shared/prisma";
-import { IOrderData, IOrderedBook } from "./order.interface";
-import { asyncForEach } from "../../../shared/utils";
-import { Order } from "@prisma/client";
+import { Order } from '@prisma/client';
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
+import prisma from '../../../shared/prisma';
+import { asyncForEach } from '../../../shared/utils';
+import { IOrderData, IOrderedBook } from './order.interface';
 
 const createOrder = async (userId: string, data: IOrderData): Promise<any> => {
   data.userId = userId;
@@ -56,7 +56,7 @@ const createOrder = async (userId: string, data: IOrderData): Promise<any> => {
 
 const getAllOrders = async (userId: string, role: string): Promise<Order[]> => {
   if (role === 'admin') {
-   //admin see all customers order 
+    //admin see all customers order
     const allOrders = await prisma.order.findMany({
       include: {
         user: true,
@@ -89,8 +89,6 @@ const getAllOrders = async (userId: string, role: string): Promise<Order[]> => {
     throw new Error('Invalid user role');
   }
 };
-
-
 
 const getSingleOrder = async (
   orderId: string,
@@ -138,9 +136,8 @@ const getSingleOrder = async (
   return order;
 };
 
-
-export const OrderServices={
-    createOrder,
-    getAllOrders,
-    getSingleOrder
-}
+export const OrderServices = {
+  createOrder,
+  getAllOrders,
+  getSingleOrder,
+};
