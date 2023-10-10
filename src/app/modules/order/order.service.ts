@@ -53,8 +53,43 @@ const createOrder = async (userId: string, data: IOrderData): Promise<any> => {
   throw new ApiError(httpStatus.BAD_REQUEST, 'Unable to create order');
 };
 
-
+const getAllOrders = async (userId: string, role: string): Promise<Order[]> => {
+  if (role === 'admin') {
+   //admin see all customers order 
+    const allOrders = await prisma.order.findMany({
+      include: {
+        user: true,
+        orderedBooks: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    });
+    return allOrders;
+  } else if (role === 'customer') {
+    // Customers can access their own orders
+    const customerOrders = await prisma.order.findMany({
+      where: {
+        userId: userId, // Filter orders by the customer's userId
+      },
+      include: {
+        user: true,
+        orderedBooks: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    });
+    return customerOrders;
+  } else {
+    // Handle other roles or throw an error if needed
+    throw new Error('Invalid user role');
+  }
+};
 
 export const OrderServices={
-    createOrder
+    createOrder,
+    getAllOrders
 }
