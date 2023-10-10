@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiError";
 import prisma from "../../../shared/prisma";
 import { IOrderData, IOrderedBook } from "./order.interface";
 import { asyncForEach } from "../../../shared/utils";
+import { Order } from "@prisma/client";
 
 const createOrder = async (userId: string, data: IOrderData): Promise<any> => {
   data.userId = userId;
@@ -89,7 +90,57 @@ const getAllOrders = async (userId: string, role: string): Promise<Order[]> => {
   }
 };
 
+
+
+const getSingleOrder = async (
+  orderId: string,
+  userId: string,
+  role: string
+): Promise<Order | null> => {
+  let order: Order | null = null;
+
+  if (role === 'admin') {
+    // Admins can access any order
+    order = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+      include: {
+        user: true,
+        orderedBooks: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    });
+  } else if (role === 'customer') {
+    // Customers can access their own orders
+    order = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+        userId: userId, // Ensure the order belongs to the customer
+      },
+      include: {
+        user: true,
+        orderedBooks: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    });
+  } else {
+    // Handle other roles or throw an error if needed
+    throw new Error('Invalid user role');
+  }
+
+  return order;
+};
+
+
 export const OrderServices={
     createOrder,
-    getAllOrders
+    getAllOrders,
+    getSingleOrder
 }
